@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>বাংলা নামতা (১-১০০)</title>
+  <style>
+    body {
+      font-family: 'SolaimanLipi', sans-serif;
+      background: linear-gradient(to right, #e0f7fa, #fffde7);
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      color: #00695c;
+    }
+    select {
+      padding: 10px;
+      font-size: 18px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-bottom: 20px;
+    }
+    .namta-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 20px;
+      max-width: 400px;
+      margin: 0 auto;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .namta-line {
+      font-size: 20px;
+      margin: 4px 0;
+      color: #4e342e;
+    }
+  </style>
+</head>
+<body>
+  <h1>বাংলা নামতা (১-১০০)</h1>
+  <p>নিচের তালিকা থেকে একটি সংখ্যা বেছে নিন:</p>
+  <select id="numberSelect" onchange="generateNamta()">
+    <option value="">-- সংখ্যা বেছে নিন --</option>
+  </select>
+
+  <div id="namtaDisplay" class="namta-container"></div>
+
+  <script>
+    const select = document.getElementById('numberSelect');
+    for (let i = 1; i <= 100; i++) {
+      const option = document.createElement('option');
+      option.value = i;
+      option.textContent = i;
+      select.appendChild(option);
+    }
+
+    function generateNamta() {
+      const num = parseInt(select.value);
+      const container = document.getElementById('namtaDisplay');
+      container.innerHTML = '';
+
+      if (!num) return;
+
+      for (let i = 1; i <= 10; i++) {
+        const line = document.createElement('div');
+        const result = num * i;
+        line.className = 'namta-line';
+        line.textContent = `${num}×${i}=${result}`.replace(/\d+/g, d =>
+          d.split('').map(ch => '০১২৩৪৫৬৭৮৯'[ch]).join('')
+        );
+        container.appendChild(line);
+      }
+    }
+  </script>
+</body>
+</html>
