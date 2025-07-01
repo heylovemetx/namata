@@ -1,0 +1,200 @@
+<!DOCTYPE html><html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <title>কিডস ইন্টেলিজেন্ট বুক ↔ Bangla Kids Book</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=SolaimanLipi&display=swap');
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'SolaimanLipi', sans-serif;
+      margin: 0; padding: 20px;
+      background: #fefefe;
+      color: #222;
+      transition: 0.3s;
+    }
+    body.dark { background: #121212; color: #eee; }
+    header {
+      background: linear-gradient(to right, #198754, #ffc107);
+      color: white; text-align: center;
+      padding: 20px; border-radius: 10px;
+    }
+    select, button {
+      padding: 10px; font-size: 16px;
+      border-radius: 10px; border: 1px solid #aaa;
+      margin: 10px 5px;
+    }
+    .section { display: none; margin-top: 20px; animation: fadeIn 0.5s ease-in-out; }
+    .active { display: block; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .letter-box {
+      display: inline-block;
+      margin: 10px; padding: 15px 25px;
+      font-size: 28px; background: #fffae6;
+      border: 2px solid #ff9800;
+      border-radius: 12px;
+      cursor: pointer; transition: 0.2s;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .letter-box:hover {
+      background: #ffe4b5; transform: scale(1.05);
+    }
+    .section-title { font-size: 22px; color: #444; margin-bottom: 10px; }
+    .option { display:inline-block; margin:10px; padding:10px 20px; background:#eee; border-radius:8px; cursor:pointer; font-size:20px; border:2px solid #ccc; }
+    .correct { background:#4CAF50 !important; color:white; }
+    .wrong { background:#f44336 !important; color:white; }
+    .drop-box { border:2px dashed #aaa; padding:20px; min-height:50px; border-radius:10px; margin-top:10px; }
+    .drag-item { display:inline-block; margin:10px; padding:15px 25px; font-size:28px; background:#e3f2fd; border:2px solid #03a9f4; border-radius:12px; cursor:grab; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📘 কিডস ইন্টেলিজেন্ট বুক</h1>
+    <p>🇷🇼 শেখো খেলতে খেলতে বাংলা, ইংরেজি, সংখ্যা, কুইজ, গেমস</p>
+  </header>
+  <div style="text-align:center;">
+    <select onchange="changeSection(this.value)">
+      <option value="">সেকশন বাছাই করুন</option>
+      <option value="swarborno">বাংলা স্বরবর্ণ</option>
+      <option value="benjonborno">বাংলা ব্যঞ্জনবর্ণ</option>
+      <option value="english">English Alphabet</option>
+      <option value="bnnum">বাংলা সংখ্যা</option>
+      <option value="ennum">English Numbers</option>
+      <option value="quiz">🧠 কুইজ</option>
+      <option value="drag">🧩 ড্র্যাগ গেম</option>
+    </select>
+    <button onclick="toggleDark()">🌙 মোড</button>
+  </div>  <div id="quiz" class="section">
+    <h2 class="section-title">🧠 কুইজ</h2>
+    <p id="question">প্রশ্ন লোড হচ্ছে...</p>
+    <div id="options"></div>
+    <p id="timer">⏱️ 10</p>
+  </div>  <div id="drag" class="section">
+    <h2 class="section-title">🧩 ড্র্যাগ অ্যান্ড ড্রপ</h2>
+    <div>
+      <div class="drag-item" id="drag1" draggable="true" ondragstart="drag(event)">ক</div>
+      <div class="drag-item" id="drag2" draggable="true" ondragstart="drag(event)">আ</div>
+      <div class="drop-box" ondrop="drop(event)" ondragover="allowDrop(event)">⬇ এখানে ফেলো</div>
+    </div>
+    <p id="dragTimer">⏱️ 10</p>
+  </div>  <script>
+    const sworobornoList = ['অ','আ','ই','ঈ','উ','ঊ','ঋ','এ','ঐ','ও','ঔ'];
+    const benjonbornoList = ['ক','খ','গ','ঘ','ঙ','চ','ছ','জ','ঝ','ঞ','ট','ঠ','ড','ঢ','ণ','ত','থ','দ','ধ','ন','প','ফ','ব','ভ','ম','য','র','ল','শ','ষ','স','হ','ড়','ঢ়','য়','ৎ','ং','ঃ','ঁ'];
+    const englishList = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+    const bnNumberList = ['১','২','৩','৪','৫','৬','৭','৮','৯','১০'];
+    const enNumberList = ['1','2','3','4','5','6','7','8','9','10'];
+    const quizLetters = sworobornoList.concat(benjonbornoList);
+    const sections = ['swarborno','benjonborno','english','bnnum','ennum','quiz','drag'];
+
+    function createSection(id, title, items) {
+      const div = document.createElement('div');
+      div.id = id;
+      div.className = 'section';
+      const h2 = document.createElement('h2');
+      h2.className = 'section-title';
+      h2.textContent = title;
+      const container = document.createElement('div');
+      items.forEach(letter => {
+        const box = document.createElement('div');
+        box.className = 'letter-box';
+        box.textContent = letter;
+        box.onclick = () => speak(letter);
+        container.appendChild(box);
+      });
+      div.appendChild(h2);
+      div.appendChild(container);
+      document.body.appendChild(div);
+    }
+
+    function init() {
+      createSection('swarborno', '🔤 বাংলা স্বরবর্ণ', sworobornoList);
+      createSection('benjonborno', '🔤 বাংলা ব্যঞ্জনবর্ণ', benjonbornoList);
+      createSection('english', '🔡 English Alphabet', englishList);
+      createSection('bnnum', '🔢 বাংলা সংখ্যা', bnNumberList);
+      createSection('ennum', '🔢 English Numbers', enNumberList);
+    }
+
+    function changeSection(id) {
+      sections.forEach(sec => {
+        const s = document.getElementById(sec);
+        if (s) s.classList.remove('active');
+      });
+      if (id && document.getElementById(id)) document.getElementById(id).classList.add('active');
+      if (id === 'quiz') startQuiz();
+      if (id === 'drag') startDragTimer();
+    }
+
+    function speak(text) {
+      const msg = new SpeechSynthesisUtterance(text);
+      msg.lang = /^[A-Za-z0-9]+$/.test(text) ? 'en-US' : 'bn-BD';
+      speechSynthesis.speak(msg);
+    }
+
+    function toggleDark() {
+      document.body.classList.toggle('dark');
+    }
+
+    function startQuiz() {
+      let correct = quizLetters[Math.floor(Math.random() * quizLetters.length)];
+      document.getElementById('question').innerText = `এই বর্ণটি কোনটি? 👉 ${correct}`;
+      let options = [correct];
+      while (options.length < 4) {
+        let rand = quizLetters[Math.floor(Math.random() * quizLetters.length)];
+        if (!options.includes(rand)) options.push(rand);
+      }
+      options.sort(() => Math.random() - 0.5);
+      const optBox = document.getElementById('options');
+      optBox.innerHTML = '';
+      options.forEach(opt => {
+        const div = document.createElement('div');
+        div.className = 'option';
+        div.innerText = opt;
+        div.onclick = () => {
+          if (opt === correct) div.classList.add('correct');
+          else div.classList.add('wrong');
+          setTimeout(startQuiz, 1000);
+        };
+        optBox.appendChild(div);
+      });
+      let time = 10;
+      const timer = document.getElementById('timer');
+      const countdown = setInterval(() => {
+        time--;
+        timer.innerText = `⏱️ ${time}`;
+        if (time <= 0) {
+          clearInterval(countdown);
+          startQuiz();
+        }
+      }, 1000);
+    }
+
+    function allowDrop(ev) { ev.preventDefault(); }
+    function drag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
+    function drop(ev) {
+      ev.preventDefault();
+      const data = ev.dataTransfer.getData("text");
+      const dragged = document.getElementById(data);
+      ev.target.appendChild(dragged);
+      speak(dragged.innerText);
+      alert('🎉 সফলভাবে ড্রপ হয়েছে!');
+    }
+
+    function startDragTimer() {
+      let time = 10;
+      const timer = document.getElementById('dragTimer');
+      const countdown = setInterval(() => {
+        time--;
+        timer.innerText = `⏱️ ${time}`;
+        if (time <= 0) {
+          clearInterval(countdown);
+          alert('⏰ সময় শেষ! আবার চেষ্টা করুন।');
+        }
+      }, 1000);
+    }
+
+    init();
+  </script></body>
+</html>
